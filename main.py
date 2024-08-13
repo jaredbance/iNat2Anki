@@ -31,7 +31,7 @@ def deleteMediaFiles(photo_paths):
     for file in photo_paths:
         os.remove(file)
 
-def createAnkiModel(taxon_photo_paths):
+def createAnkiModel():
   # Define a unique ID for the model
   model_id = 1607392319
 
@@ -51,7 +51,10 @@ def createAnkiModel(taxon_photo_paths):
         'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br>{{scientificName}}',
       },
     ])
+  
+  return my_model
 
+def createDeck():
   # Define a unique ID for the deck
   deck_id = 2059400110
 
@@ -60,6 +63,9 @@ def createAnkiModel(taxon_photo_paths):
     deck_id,
     'Sample Deck')
   
+  return my_deck
+
+def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
   # Create HTML for taxon photos
   taxon_photos_html = '<br>'.join([f'<img src="{os.path.basename(path)}">' for path in taxon_photo_paths])
 
@@ -74,7 +80,8 @@ def createAnkiModel(taxon_photo_paths):
 
   # Add the note to the deck
   my_deck.add_note(my_note)
-
+  
+def saveDeck(my_deck, taxon_photo_paths):
   # Define the package and add the deck to it
   my_package = genanki.Package(my_deck)
 
@@ -83,11 +90,13 @@ def createAnkiModel(taxon_photo_paths):
   # Save the package to a file
   my_package.write_to_file('output.apkg')
 
-
 if __name__ == "__main__":
     #print(sys.version)
     observation_data = fetchObservation("194502260")
     photo_paths = downloadPhotos(observation_data)
-    createAnkiModel(photo_paths)
+    model = createAnkiModel()
+    deck = createDeck()
+    createNote(photo_paths, observation_data, model, deck)
+    saveDeck(deck, photo_paths)
     deleteMediaFiles(photo_paths)
     print(photo_paths)
