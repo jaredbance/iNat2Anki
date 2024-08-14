@@ -5,6 +5,7 @@ import urllib
 import sys
 import os
 from random import randint
+import mycomatchParser
 
 # Function to fetch observation from iNaturalist API
 def fetchObservation(observation_id):
@@ -48,13 +49,14 @@ def createAnkiModel():
       {'name': 'extraQuestions'},
       {'name': 'extraAnswers'},
       {'name': 'ancestors'},
-      {'name': 'rank'}
+      {'name': 'rank'},
+      {'name': 'etymology'}
     ],
     templates=[
       {
         'name': 'Taxon Card',
-        'qfmt': '{{photos}}<br><br>Extra Questions:<br>{{extraQuestions}}<br><br><p style="display:inline">Rank: </p>{{rank}}<br>{{type:scientificName}}',
-        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><p style="display:inline">Common Name: </p>{{commonName}}<br><br>{{ancestors}}<br><br>Extra Answers:<br>{{extraAnswers}}',
+        'qfmt': '{{photos}}<br><br><b>Extra Questions:</b><br>{{extraQuestions}}<br><br><p style="display:inline">Rank: </p>{{rank}}<br>{{type:scientificName}}',
+        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><b><p style="display:inline">Common Name: </p></b>{{commonName}}<br><br><b><p style="display:inline">Etymology: </p></b>{{etymology}}<br><br><i>{{ancestors}}</i><br><br><b>Extra Answers:</b><br>{{extraAnswers}}',
       },
     ])
   
@@ -80,7 +82,7 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
   #   model=my_model,
   #   fields=['What is the capital of France?', 'Paris'])
 
-  commonName = ""
+  commonName = "None"
   if 'preferred_common_name' in observation_data['taxon']:
     commonName = observation_data['taxon']['preferred_common_name']
 
@@ -107,7 +109,10 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
           phylumName = name
   
   ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName
-    
+  etymology = "None"
+  if observation_data['taxon']['rank'] == "species":
+    etymology = mycomatchParser.getNameOrigins(observation_data['taxon']['name'])
+  
   my_note = genanki.Note(
     model=my_model,
     fields=[taxon_photos_html,
@@ -116,7 +121,8 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
             " - None",
             " - None",
             ancestors,
-            observation_data['taxon']['rank']])
+            observation_data['taxon']['rank'],
+            etymology])
 
   # Add the note to the deck
   my_deck.add_note(my_note)
@@ -151,4 +157,5 @@ if __name__ == "__main__":
       line = file.readline()
     saveDeck(deck, media)
     deleteMediaFiles(media)
+    #print(mycomatchParser.getNameOrigins('Tricholoma subacutum'))
     
