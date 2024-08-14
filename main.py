@@ -4,6 +4,7 @@ import genanki
 import urllib
 import sys
 import os
+from random import randint
 
 # Function to fetch observation from iNaturalist API
 def fetchObservation(observation_id):
@@ -15,12 +16,13 @@ def fetchObservation(observation_id):
 def downloadPhotos(observation_data):
     photos = observation_data['observation_photos']
     photo_paths = []
+    id = observation_data['id']
     i = 0
     for photo in enumerate(photos):
         #print(photo[1]['photo']['url'])
         square_img_url = photo[1]['photo']['url']
         img_url = square_img_url.replace('square', 'original')
-        img_name = f"observation_{i}_{os.path.basename(img_url)}"
+        img_name = f"observation_{id}_{i}_{os.path.basename(img_url)}"
         img_path = os.path.join('media', img_name)
         urllib.request.urlretrieve(img_url, img_path)
         photo_paths.append(img_path)
@@ -46,9 +48,9 @@ def createAnkiModel():
     ],
     templates=[
       {
-        'name': 'Card 1',
+        'name': 'Taxon Card',
         'qfmt': '{{photos}}<br><br> {{type:scientificName}}',
-        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br>{{scientificName}}',
+        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><i>{{scientificName}}</i><br><br>{{commonName}}',
       },
     ])
   
@@ -56,7 +58,7 @@ def createAnkiModel():
 
 def createDeck():
   # Define a unique ID for the deck
-  deck_id = 2059400110
+  deck_id = randomNumber(10)
 
   # Create the deck
   my_deck = genanki.Deck(
@@ -74,9 +76,13 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
   #   model=my_model,
   #   fields=['What is the capital of France?', 'Paris'])
 
+  commonName = ""
+  if 'preferred_common_name' in observation_data['taxon']:
+    commonName = observation_data['taxon']['preferred_common_name']
+
   my_note = genanki.Note(
     model=my_model,
-    fields=[taxon_photos_html, "test", "test"]) #scientificName, commonName])
+    fields=[taxon_photos_html, observation_data['taxon']['name'], commonName])
 
   # Add the note to the deck
   my_deck.add_note(my_note)
@@ -90,13 +96,25 @@ def saveDeck(my_deck, taxon_photo_paths):
   # Save the package to a file
   my_package.write_to_file('output.apkg')
 
+def randomNumber(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
+
 if __name__ == "__main__":
-    #print(sys.version)
-    observation_data = fetchObservation("194502260")
-    photo_paths = downloadPhotos(observation_data)
+    file = open('input.txt', 'r')
+    line = ""
     model = createAnkiModel()
     deck = createDeck()
-    createNote(photo_paths, observation_data, model, deck)
-    saveDeck(deck, photo_paths)
-    deleteMediaFiles(photo_paths)
-    print(photo_paths)
+    media = []
+    line = file.readline()
+    while line != "":
+      observation_data = fetchObservation(line.strip())
+      photo_paths = downloadPhotos(observation_data)
+      createNote(photo_paths, observation_data, model, deck)
+      print(photo_paths)
+      media.extend(photo_paths)
+      line = file.readline()
+    saveDeck(deck, media)
+    deleteMediaFiles(media)
+    
