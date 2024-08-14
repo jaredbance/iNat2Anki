@@ -45,12 +45,14 @@ def createAnkiModel():
       {'name': 'photos'},
       {'name': 'scientificName'},
       {'name': 'commonName'},
+      {'name': 'addtionalQuestions'},
+      {'name': 'addtionalAnswers'},
     ],
     templates=[
       {
         'name': 'Taxon Card',
-        'qfmt': '{{photos}}<br><br> {{type:scientificName}}',
-        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><i>{{scientificName}}</i><br><br>{{commonName}}',
+        'qfmt': '{{photos}}<br><br><p>Addtional Questions:</p>{{addtionalQuestions}}<br><br>{{type:scientificName}}',
+        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><p style="display:inline">Common Name: </p>{{commonName}}<br><br><p>Addtional Answers:</p>{{addtionalAnswers}}',
       },
     ])
   
@@ -82,7 +84,7 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
 
   my_note = genanki.Note(
     model=my_model,
-    fields=[taxon_photos_html, observation_data['taxon']['name'], commonName])
+    fields=[taxon_photos_html, observation_data['taxon']['name'], commonName, "- None", " - None"])
 
   # Add the note to the deck
   my_deck.add_note(my_note)
