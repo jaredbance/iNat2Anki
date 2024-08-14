@@ -45,14 +45,16 @@ def createAnkiModel():
       {'name': 'photos'},
       {'name': 'scientificName'},
       {'name': 'commonName'},
-      {'name': 'addtionalQuestions'},
-      {'name': 'addtionalAnswers'},
+      {'name': 'extraQuestions'},
+      {'name': 'extraAnswers'},
+      {'name': 'ancestors'},
+      {'name': 'rank'}
     ],
     templates=[
       {
         'name': 'Taxon Card',
-        'qfmt': '{{photos}}<br><br><p>Addtional Questions:</p>{{addtionalQuestions}}<br><br>{{type:scientificName}}',
-        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><p style="display:inline">Common Name: </p>{{commonName}}<br><br><p>Addtional Answers:</p>{{addtionalAnswers}}',
+        'qfmt': '{{photos}}<br><br>Extra Questions:<br>{{extraQuestions}}<br><br><p style="display:inline">Rank: </p>{{rank}}<br>{{type:scientificName}}',
+        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><p style="display:inline">Common Name: </p>{{commonName}}<br><br>{{ancestors}}<br><br>Extra Answers:<br>{{extraAnswers}}',
       },
     ])
   
@@ -82,9 +84,39 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
   if 'preferred_common_name' in observation_data['taxon']:
     commonName = observation_data['taxon']['preferred_common_name']
 
+  # find taxonomic ancestors
+  elementContainingAncestors = None
+  for identification in observation_data['identifications']:
+     if (identification['taxon']['name'] == observation_data['taxon']['name']):
+        elementContainingAncestors = identification
+  
+  familyName = "" 
+  orderName = ""
+  className = ""
+  phylumName = ""
+  for element in elementContainingAncestors['taxon']['ancestors']:
+    name = element['name']
+    match element['rank']:
+        case 'family':
+          familyName = name
+        case 'order':
+          orderName = name
+        case 'class':
+          className = name
+        case 'phylum':
+          phylumName = name
+  
+  ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName
+    
   my_note = genanki.Note(
     model=my_model,
-    fields=[taxon_photos_html, observation_data['taxon']['name'], commonName, "- None", " - None"])
+    fields=[taxon_photos_html,
+            observation_data['taxon']['name'],
+            commonName,
+            " - None",
+            " - None",
+            ancestors,
+            observation_data['taxon']['rank']])
 
   # Add the note to the deck
   my_deck.add_note(my_note)
