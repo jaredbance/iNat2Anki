@@ -175,7 +175,8 @@ if __name__ == "__main__":
       createNote(photo_paths, observation_data, model, deck)
       media.extend(photo_paths)
       line = file.readline()
+      print("Done " + str(observation_data['id']))
     saveDeck(deck, media)
     deleteMediaFiles(media)
-    print("DONE")
+    print("FINISHED")
     
