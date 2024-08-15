@@ -10,13 +10,13 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
 
    Mac:
    ```
-   python3 -m venv myenv
+   python -m venv myenv
    source myenv\bin\activate
    python -m pip install -r requirements.txt
    ```
    Windows:
    ```
-   python3 -m venv myenv
+   python -m venv myenv
    myenv\Scripts\activate
    python -m pip install -r requirements.txt
    ```
