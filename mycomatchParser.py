@@ -51,12 +51,12 @@ def __getField(species, field):
         for line in lines:
             line = line.strip()
             
-            # Check if the line contains "LATIN NAME(S) " followed by another string
+            # Check if the line contains "LATIN NAME(S) " followed by species name
             if not latin_name_found and line.startswith("LATIN NAME(S)  " + species):
                 latin_name_found = True
                 continue
             
-            # Once we find the "LATIN NAME(S) ", we search for the "NAME ORIGIN" line
+            # Once we find the "LATIN NAME(S) ", we search for the other line
             if latin_name_found and line.startswith(field):
                 return line[len(field)+2:].replace('^', '')
     
