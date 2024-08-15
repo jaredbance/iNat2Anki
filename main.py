@@ -18,7 +18,6 @@ def downloadPhotos(observation_data):
     id = observation_data['id']
     i = 0
     for photo in enumerate(photos):
-        #print(photo[1]['photo']['url'])
         square_img_url = photo[1]['photo']['url']
         img_url = square_img_url.replace('square', 'original')
         img_name = f"observation_{id}_{i}_{os.path.basename(img_url)}"
