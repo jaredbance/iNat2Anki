@@ -10,4 +10,8 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
 2) Run the script in a terminal
 ```bash
 python main.py
-``` 
+```
+
+# Sample Flashcard
+![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/1.png)
+![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/2.png)
