@@ -1,8 +1,6 @@
 import requests
 import genanki
-#import datetime
 import urllib
-import sys
 import os
 from random import randint
 import mycomatchParser
@@ -36,7 +34,7 @@ def deleteMediaFiles(photo_paths):
 
 def createAnkiModel():
   # Define a unique ID for the model
-  model_id = 1607392319
+  model_id = randomNumber(10)
 
   # Define the model for the card
   my_model = genanki.Model(
@@ -46,17 +44,34 @@ def createAnkiModel():
       {'name': 'photos'},
       {'name': 'scientificName'},
       {'name': 'commonName'},
-      {'name': 'extraQuestions'},
-      {'name': 'extraAnswers'},
+      {'name': 'otherQuestionDetails'},
+      {'name': 'otherAnswerDetails'},
       {'name': 'ancestors'},
       {'name': 'rank'},
-      {'name': 'etymology'}
+      {'name': 'etymology'},
+      {'name': 'spores'},
+      {'name': 'odour'},
+      {'name': 'edibility'},
+      {'name': 'taste'},
+      {'name': 'habitat'}
     ],
     templates=[
       {
         'name': 'Taxon Card',
-        'qfmt': '{{photos}}<br><br><b>Extra Questions:</b><br>{{extraQuestions}}<br><br><p style="display:inline">Rank: </p>{{rank}}<br>{{type:scientificName}}',
-        'afmt': '{{photos}}<br><br> {{type:scientificName}}<br><br><div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br><b><p style="display:inline">Common Name: </p></b>{{commonName}}<br><br><b><p style="display:inline">Etymology: </p></b>{{etymology}}<br><br><i>{{ancestors}}</i><br><br><b>Extra Answers:</b><br>{{extraAnswers}}',
+        'qfmt': '{{photos}}<br><br><p style="display:inline">Rank: </p>{{rank}}<br>{{type:scientificName}}',
+        'afmt': '''{{photos}}<br><br>
+        {{type:scientificName}}<br><br>
+        <div style="font-size: 30px;"><i>{{scientificName}}</i></div><br><br>
+        <b><p style="display:inline">Common Name: </p></b>{{commonName}}<br><br>
+        <b><p style="display:inline">Etymology: </p></b>{{etymology}}<br><br>
+        <i>{{ancestors}}</i><br><br>
+        <hr>
+        <br><b><p style="display:inline">Spores: </p></b>{{spores}}
+        <br><br><b><p style="display:inline">Odour: </p></b>{{odour}}
+        <br><br><b><p style="display:inline">Edibility: </p></b>{{edibility}}
+        <br><br><b><p style="display:inline">Taste: </p></b>{{taste}}
+        <br><br><b><p style="display:inline">Habitat: </p></b>{{habitat}}
+        ''',
       },
     ])
   
@@ -65,33 +80,25 @@ def createAnkiModel():
 def createDeck():
   # Define a unique ID for the deck
   deck_id = randomNumber(10)
-
   # Create the deck
   my_deck = genanki.Deck(
     deck_id,
     'Sample Deck')
-  
   return my_deck
 
 def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
   # Create HTML for taxon photos
   taxon_photos_html = '<br>'.join([f'<img src="{os.path.basename(path)}">' for path in taxon_photo_paths])
-
-  # # Create a note
-  # my_note = genanki.Note(
-  #   model=my_model,
-  #   fields=['What is the capital of France?', 'Paris'])
-
-  commonName = "None"
+  scientificName = observation_data['taxon']['name']
+  commonName = "Unknown"
   if 'preferred_common_name' in observation_data['taxon']:
     commonName = observation_data['taxon']['preferred_common_name']
-
+  
   # find taxonomic ancestors
   elementContainingAncestors = None
   for identification in observation_data['identifications']:
-     if (identification['taxon']['name'] == observation_data['taxon']['name']):
+      if (identification['taxon']['name'] == scientificName):
         elementContainingAncestors = identification
-  
   familyName = "" 
   orderName = ""
   className = ""
@@ -107,23 +114,38 @@ def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
           className = name
         case 'phylum':
           phylumName = name
-  
-  ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName
-  etymology = "None"
-  if observation_data['taxon']['rank'] == "species":
-    etymology = mycomatchParser.getNameOrigins(observation_data['taxon']['name'])
+  ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName  
+
+  etymology = "Unknown"
+  spores = "Unknown"
+  odour = "Unknown"
+  edibility = "Unknown" 
+  taste = "Unknown"
+  habitat = "Unknown"
+  mycoMatchFields = mycomatchParser.getFields(scientificName, observation_data['taxon']['rank'])
+  if mycoMatchFields != None:
+    etymology = mycoMatchFields.nameOrigin
+    spores = mycoMatchFields.spores
+    odour = mycoMatchFields.odour
+    edibility = mycoMatchFields.edibility
+    taste = mycoMatchFields.taste
+    habitat = mycoMatchFields.habitat
   
   my_note = genanki.Note(
     model=my_model,
     fields=[taxon_photos_html,
-            observation_data['taxon']['name'],
+            scientificName,
             commonName,
-            " - None",
-            " - None",
+            "",
+            "",
             ancestors,
             observation_data['taxon']['rank'],
-            etymology])
-
+            etymology,
+            spores,
+            odour,
+            edibility,
+            taste,
+            habitat])
   # Add the note to the deck
   my_deck.add_note(my_note)
   
@@ -152,10 +174,9 @@ if __name__ == "__main__":
       observation_data = fetchObservation(line.strip())
       photo_paths = downloadPhotos(observation_data)
       createNote(photo_paths, observation_data, model, deck)
-      print(photo_paths)
       media.extend(photo_paths)
       line = file.readline()
     saveDeck(deck, media)
     deleteMediaFiles(media)
-    #print(mycomatchParser.getNameOrigins('Tricholoma subacutum'))
+    print("DONE")
     
