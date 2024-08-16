@@ -33,21 +33,21 @@ def getFields(species, rank):
     nameOrigins = __getNameOrigins(species)
     if nameOrigins == None:
         return None # species doesn't exist in myco match
-    spores = __getSpores(species)
-    edibility = __getEdibility(species)
-    taste = __getTaste(species)
-    odour = __getOdour(species)
-    habitat = __getHabitat(species)
+    spores = __replaceIfEmpty(__getSpores(species))
+    edibility = __replaceIfEmpty(__getEdibility(species))
+    taste = __replaceIfEmpty(__getTaste(species))
+    odour = __replaceIfEmpty(__getOdour(species))
+    habitat = __replaceIfEmpty(__getHabitat(species))
     return mycoMatchFields(nameOrigins, spores, edibility, taste, odour, habitat)
 
 def __getField(species, field):
+    # Flag to track when we've found the "LATIN NAME(S) " line
+    latin_name_found = False
     for file_path in __get_txt_files('resources/mycomatch'):
         with open(file_path, 'r', encoding="latin1") as file:
             lines = file.readlines()
         
-        # Flag to track when we've found the "LATIN NAME(S) " line
-        latin_name_found = False
-        
+        count = 0
         for line in lines:
             line = line.strip()
             
@@ -59,7 +59,13 @@ def __getField(species, field):
             # Once we find the "LATIN NAME(S) ", we search for the other line
             if latin_name_found and line.startswith(field):
                 return line[len(field)+2:].replace('^', '')
-    
+            
+            if latin_name_found:
+                if count == 30:
+                    return "Unknown"
+                count = count + 1
+        if latin_name_found:
+            return "Unknown"
     # If no match is found, return None
     return None
 
@@ -75,3 +81,9 @@ def __get_txt_files(folder_path):
             txt_files.append(os.path.join(folder_path, filename))
     
     return txt_files
+
+def __replaceIfEmpty(field):
+    if field == "":
+        return "Unknown"
+    else:
+        return field
