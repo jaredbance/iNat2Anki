@@ -27,7 +27,7 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
    ```
 
 # Usage
-1) Open up Terminal (MAC) or Command Prompt (WINDOWS) and navigate to folder you cloned the repo to
+1) Open up Terminal (MAC) or Command Prompt (WINDOWS) and navigate to the folder you cloned the repo to
 2) Pull latest version of the script `git pull`
 4) Load your virtual environment:
 
