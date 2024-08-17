@@ -4,6 +4,11 @@ This script converts any iNaturalist observation of fungi into an Anki flashcard
 
 Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are included to enhance the study of taxonomy.
 
+# Sample Flashcard
+Front of card | Back of card
+--- | --- 
+![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/1.png) | ![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/2.png)
+
 # Requirments
 1) Python 3.x
 3) Git installed on your computer
@@ -46,8 +51,3 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
    python main.py
    ```
 9) Outputted Anki deck is saved to "output.apkg"
-
-# Sample Flashcard
-Front of card | Back of card
---- | --- 
-![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/1.png) | ![alt text](https://raw.githubusercontent.com/jaredbance/iNatFungi2Anki/master/demoPics/2.png)
