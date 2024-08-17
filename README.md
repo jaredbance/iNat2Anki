@@ -11,7 +11,7 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
 # Pre-Setup (you only have to do these steps once)
 1) Open up Terminal (MAC) or Command Prompt (WINDOWS)
 1) Clone the repo `git clone https://github.com/jaredbance/iNatFungi2Anki.git`
-2) Install dependancies from `requirements.txt`:
+2) Install dependancies from "requirements.txt":
 
    Mac:
    ```
@@ -45,6 +45,7 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
    ```bash
    python main.py
    ```
+9) Outputted Anki deck is saved to "output.apkg"
 
 # Sample Flashcard
 Front of card | Back of card
