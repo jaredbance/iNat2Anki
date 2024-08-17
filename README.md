@@ -11,7 +11,7 @@ Additional details scraped from [MycoMatch](https://www.mycomatch.com/) are incl
    Mac:
    ```
    python -m venv myenv
-   source myenv\bin\activate
+   source myenv/bin/activate
    python -m pip install -r requirements.txt
    ```
    Windows:
