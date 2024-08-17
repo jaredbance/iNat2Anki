@@ -3,7 +3,31 @@ import genanki
 import urllib
 import os
 from random import randint
-import mycomatchParser
+import pickle 
+
+UNKNOWN = "Unknown"
+OUTPUT_FILE = "output.apkg"
+
+class mycoMatchFields:
+    nameOrigin = UNKNOWN
+    spores = UNKNOWN
+    edibility = UNKNOWN
+    taste = UNKNOWN
+    odour = UNKNOWN
+    habitat = UNKNOWN
+
+def loadMyocMatchMap():
+  with open('resources/myocmatch.pkl', 'rb') as f:
+     return pickle.load(f)
+
+myocMatchMap = loadMyocMatchMap()
+
+def getFieldsFromMycoMatch(name, rank):
+  if rank != "species":
+     return None
+  if name not in myocMatchMap:
+     return None
+  return myocMatchMap[name]
 
 # Function to fetch observation from iNaturalist API
 def fetchObservation(observation_id):
@@ -86,68 +110,73 @@ def createDeck():
   return my_deck
 
 def createNote(taxon_photo_paths, observation_data, my_model, my_deck):
-  # Create HTML for taxon photos
-  taxon_photos_html = '<br>'.join([f'<img src="{os.path.basename(path)}">' for path in taxon_photo_paths])
-  scientificName = observation_data['taxon']['name']
-  commonName = "Unknown"
-  if 'preferred_common_name' in observation_data['taxon']:
-    commonName = observation_data['taxon']['preferred_common_name']
-  
-  # find taxonomic ancestors
-  elementContainingAncestors = None
-  for identification in observation_data['identifications']:
-      if (identification['taxon']['name'] == scientificName):
-        elementContainingAncestors = identification
-  familyName = "" 
-  orderName = ""
-  className = ""
-  phylumName = ""
-  for element in elementContainingAncestors['taxon']['ancestors']:
-    name = element['name']
-    match element['rank']:
-        case 'family':
-          familyName = name
-        case 'order':
-          orderName = name
-        case 'class':
-          className = name
-        case 'phylum':
-          phylumName = name
-  ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName  
+  try:
+    # Create HTML for taxon photos
+    taxon_photos_html = '<br>'.join([f'<img src="{os.path.basename(path)}">' for path in taxon_photo_paths])
+    scientificName = observation_data['taxon']['name']
+    commonName = UNKNOWN
+    if 'preferred_common_name' in observation_data['taxon']:
+      commonName = observation_data['taxon']['preferred_common_name']
+    
+    # find taxonomic ancestors
+    elementContainingAncestors = None
+    for identification in observation_data['identifications']:
+        if (identification['taxon']['name'] == scientificName):
+          elementContainingAncestors = identification
+    familyName = "" 
+    orderName = ""
+    className = ""
+    phylumName = ""
+    for element in elementContainingAncestors['taxon']['ancestors']:
+      name = element['name']
+      match element['rank']:
+          case 'family':
+            familyName = name
+          case 'order':
+            orderName = name
+          case 'class':
+            className = name
+          case 'phylum':
+            phylumName = name
+    ancestors = familyName + " < " +  orderName + " < " + className + " < " + phylumName  
 
-  etymology = "Unknown"
-  spores = "Unknown"
-  odour = "Unknown"
-  edibility = "Unknown" 
-  taste = "Unknown"
-  habitat = "Unknown"
-  mycoMatchFields = mycomatchParser.getFields(scientificName, observation_data['taxon']['rank'])
-  if mycoMatchFields != None:
-    etymology = mycoMatchFields.nameOrigin
-    spores = mycoMatchFields.spores
-    odour = mycoMatchFields.odour
-    edibility = mycoMatchFields.edibility
-    taste = mycoMatchFields.taste
-    habitat = mycoMatchFields.habitat
-  
-  my_note = genanki.Note(
-    model=my_model,
-    fields=[taxon_photos_html,
-            scientificName,
-            commonName,
-            "",
-            "",
-            ancestors,
-            observation_data['taxon']['rank'],
-            etymology,
-            spores,
-            odour,
-            edibility,
-            taste,
-            habitat])
-  # Add the note to the deck
-  my_deck.add_note(my_note)
-  
+    etymology = UNKNOWN
+    spores = UNKNOWN
+    odour = UNKNOWN
+    edibility = UNKNOWN 
+    taste = UNKNOWN
+    habitat = UNKNOWN
+    #mycoMatchFields = mycomatchParser.getFields(scientificName, observation_data['taxon']['rank'])
+    mycoMatchFields = getFieldsFromMycoMatch(scientificName, observation_data['taxon']['rank'])
+    if mycoMatchFields != None:
+      etymology = mycoMatchFields.nameOrigin
+      spores = mycoMatchFields.spores
+      odour = mycoMatchFields.odour
+      edibility = mycoMatchFields.edibility
+      taste = mycoMatchFields.taste
+      habitat = mycoMatchFields.habitat
+    
+    my_note = genanki.Note(
+      model=my_model,
+      fields=[taxon_photos_html,
+              scientificName,
+              commonName,
+              "",
+              "",
+              ancestors,
+              observation_data['taxon']['rank'],
+              etymology,
+              spores,
+              odour,
+              edibility,
+              taste,
+              habitat])
+    # Add the note to the deck
+    my_deck.add_note(my_note)
+    print("Done " + str(observation_data['id']))
+  except Exception:
+    print("Could not make card for observation " + str(observation_data['id']))
+     
 def saveDeck(my_deck, taxon_photo_paths):
   # Define the package and add the deck to it
   my_package = genanki.Package(my_deck)
@@ -155,7 +184,7 @@ def saveDeck(my_deck, taxon_photo_paths):
   my_package.media_files = taxon_photo_paths
 
   # Save the package to a file
-  my_package.write_to_file('output.apkg')
+  my_package.write_to_file(OUTPUT_FILE)
 
 def randomNumber(n):
     range_start = 10**(n-1)
@@ -175,8 +204,7 @@ if __name__ == "__main__":
       createNote(photo_paths, observation_data, model, deck)
       media.extend(photo_paths)
       line = file.readline()
-      print("Done " + str(observation_data['id']))
     saveDeck(deck, media)
     deleteMediaFiles(media)
-    print("FINISHED")
+    print("FINISHED. ANKI DECK SAVED to '" + OUTPUT_FILE + "'")
     
