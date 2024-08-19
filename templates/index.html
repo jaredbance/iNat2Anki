@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask-SocketIO Example</title>
+    <script type="text/javascript" charset="utf-8">
+        document.addEventListener('DOMContentLoaded', function() {
+            var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+            socket.on('update', function(msg) {
+                var outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = '<pre>' + msg.data + '</pre>';
+            });
+        });
+    </script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>iNatFungi2Anki</h1>
+    <h3>Enter iNat IDs below (one per line):</h3>
+    <textarea type="text" id="textInput" placeholder="Enter IDs (e.g. 230398888)" rows="20" cols="50" ></textarea> <br><br>
+    <button onclick="submitInput()" style="width:100px;height:30px;"><b>Submit</b></button>
+
+    <script>
+        const socket = io();
+
+        function submitInput() {
+            const text = document.getElementById('textInput').value;
+            socket.emit('submit_input', { text: text });
+        }
+    </script>
+
+    <script>
+        window.onbeforeunload = function() {
+            navigator.sendBeacon('/shutdown');
+        };
+    </script>
+    <hr>
+    <h3><b>Output: </b></h3>
+    <div id="output">
+    </div>
+</body>
+</html>
