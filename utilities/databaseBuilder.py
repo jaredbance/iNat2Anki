@@ -20,7 +20,7 @@ class mycoMatchFields:
 def buildMap():
     map = {}
     # Flag to track when we've found the "LATIN NAME(S) " line
-    for file_path in __get_txt_files('resources/mycomatch'):
+    for file_path in __get_txt_files('./resources/mycomatch'):
         latin_name_found = False
         key = ""
         value = mycoMatchFields()
@@ -57,7 +57,7 @@ def buildMap():
                     case "HABITAT":
                         value.habitat = __getFieldValue(line).replace("^","")
                     case "SPORE DEPOSIT":
-                        value.habitat = __getFieldValue(line).replace("^","")
+                        value.spores = __getFieldValue(line).replace("^","")
                     case "NAME ORIGIN":
                         value.nameOrigin = __getFieldValue(line).replace("^","")
         map[key] = value
@@ -161,7 +161,7 @@ def __verify3():
         lastNum = int(line)
 
 def saveMap(map):
-    with open('myocmatch.pkl', 'wb') as f:
+    with open('./resources/myocmatch.pkl', 'wb') as f:
         pickle.dump(map, f)
         
     #with open('mycomatch.pkl', 'rb') as f:
